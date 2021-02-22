@@ -23,11 +23,10 @@ class ImageFactory extends Factory
      */
     public function definition()
     {
+        $galeryId = Gallery::all()->pluck('id')->toArray();
         return [
             'url' => $this->faker->imageUrl($width = 640, $height = 480),
-            'gallery_id' => function () {
-                return Gallery::all()->random()->id;
-            }
+            'gallery_id'=>$this->faker->randomElement($galeryId),
         ];
     }
 }

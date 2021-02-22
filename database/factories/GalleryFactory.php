@@ -21,14 +21,17 @@ class GalleryFactory extends Factory
      *
      * @return array
      */
+    
     public function definition()
     {
+        $userId = User::all()->pluck('id')->toArray();
         return [
             'title' => $this->faker->sentence,
             'description' => $this->faker->text($maxNbChars = 1000),
-            'user_id' => function () {
-                return User::all()->random()->id;
-            }
+            'user_id' => $this->faker->randomElement($userId)
+            
         ];
     }
 }
+
+

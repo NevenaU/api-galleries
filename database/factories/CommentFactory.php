@@ -23,14 +23,14 @@ class CommentFactory extends Factory
      */
     public function definition()
     {
+        $userId = User::all()->pluck('id')->toArray();
+        $galeryId = Gallery::all()->pluck('id')->toArray();
         return [
             'content'=>$this->faker->sentence(),
-            'gallery_id'=>function(){
-                return Gallery::all()->random()->id;
-            },
-            'user_id'=>function(){
-                return User::all()->random()->id;
-            }
+            'gallery_id'=>$this->faker->randomElement($galeryId),
+            'user_id'=>$this->faker->randomElement($userId)
         ];
     }
 }
+
+    
