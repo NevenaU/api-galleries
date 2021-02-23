@@ -24,7 +24,9 @@ class CommentRequest extends FormRequest
     public function rules()
     {
         return [
-            'content'=>'max:1000'
+            'content'=>'max:1000',
+            'user_id' => 'numeric',
+            'gallery_id' => 'numeric'
         ];
     }
 }
