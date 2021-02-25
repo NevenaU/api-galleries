@@ -4,21 +4,39 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\GalleryRequest;
 use App\Http\Requests\UpdateGalleryRequest;
-use App\Http\Requests\UpdateMovieRequest;
 use App\Models\Gallery;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class GalleriesController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a listing of the resource
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $galleries = Gallery::all();
-        return response()->json($galleries);
+        $galleriesQuery = Gallery::query();
+        $galleriesQuery->with('user', 'images');
+        $search = $request->header('searchText');
+        $galleriesQuery->where( function($query) use ($search) {
+            $query->where('title', 'like', '%' . $search . '%')
+                ->orWhere('description', 'like', '%' . $search . '%')
+                ->orwhereHas('user', function($que) use ($search) {
+                    $que->where('first_name', 'like', '%' . $search . '%')
+                        ->orWhere('last_name', 'like', '%' . $search . '%');
+                });
+        });
+
+        $galleries = $galleriesQuery->take($request->header('pagination'))
+        ->get();
+
+        $count = $galleriesQuery->count();
+
+        return [$galleries, $count];
+
+
     }
 
     /**
@@ -29,9 +47,7 @@ class GalleriesController extends Controller
      */
     public function store(GalleryRequest $request)
     {
-        $data = $request->validated();
-        $newGallery = Gallery::create($data);
-        return response()->json($newGallery);
+       
     }
 
     /**
@@ -42,7 +58,8 @@ class GalleriesController extends Controller
      */
     public function show($id)
     {
-        $gallery = Gallery::findOrFail($id);
+        //
+        $gallery = Gallery::with('images', 'user', 'comments', 'comments.user')->findOrFail($id);
         return response()->json($gallery);
     }
 
@@ -55,10 +72,7 @@ class GalleriesController extends Controller
      */
     public function update(UpdateGalleryRequest $request, $id)
     {
-        $data = $request->validated();
-        $gallery = Gallery::findOrFail($id);
-        $gallery->update($data);
-        return response()->json($gallery);
+       
     }
 
     /**
@@ -69,8 +83,13 @@ class GalleriesController extends Controller
      */
     public function destroy($id)
     {
-        $gallery = Gallery::findOrFail($id);
-        $gallery->delete();
-        return response()->json($gallery);
+        $gallery = Gallery::with('images', 'comments')->findOrFail($id);
+        $user = auth('api')->user();
+        if($user->id === $gallery->user_id){
+            $gallery->images()->delete();
+            $gallery->comments()->delete();
+            $gallery->delete();
+        }
+        return $gallery;
     }
 }

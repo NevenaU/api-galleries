@@ -16,7 +16,6 @@ class Gallery extends Model
     public function user(){
         return $this->belongsTo(User::class);
     }
-
     public function images(){
         return $this->hasMany(Image::class);
     }
@@ -24,4 +23,7 @@ class Gallery extends Model
     public function comments(){
         return $this->hasMany(Comment::class);
     }
+
+    
+    
 }

@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CommentsController;
 use App\Http\Controllers\GalleriesController;
+use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -20,20 +21,19 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
- 
-Route::get("/galleries", [GalleriesController::class, 'index']);
-Route::post("/galleries", [GalleriesController::class, 'store']);
-Route::get("/galleries/{id}", [GalleriesController::class, 'show']);
-Route::put("/galleries/{id}", [GalleriesController::class, 'update']);
-Route::delete("/galleries/{id}", [GalleriesController::class, 'destroy']);
 
-Route::get('comments', [CommentsController::class, 'index'] );
-Route::post('comments', [CommentsController::class, 'store'] );
-Route::delete('/comments/{id}', [CommentsController::class, 'destroy']);
+Route::group(['middleware' => 'auth:api'], function () {
+    Route::delete('/delete-comment/{id}', [CommentsController::class, 'destroy']);
+    Route::delete('/galleries/{id}', [GalleriesController::class, 'destroy']);
+    Route::post('logout', [AuthController::class, 'logout']);
+    Route::get('me', [AuthController::class, 'me']);
+});
+
+Route::get('/galleries', [GalleriesController::class, 'index']);
+Route::get('/galleries/{id}', [GalleriesController::class, 'show']);
+Route::get('/author/{id}', [UserController::class, 'show']);
 
 
-Route::post('register', [ AuthController::class, 'register' ]);//->middleware('guest:api');
-Route::post('login', [ AuthController::class, 'login' ]);//->middleware('guest:api');
-Route::post('logout', [ AuthController::class, 'logout' ]);//->middleware('auth:api');
-Route::get('me', [ AuthController::class, 'me' ]);//->middleware('auth:api');
-
+Route::post('register', [AuthController::class, 'register'])->middleware('guest:api');
+Route::post('login', [AuthController::class, 'login'])->middleware('guest:api');
+Route::post('/refresh', [AuthController::class, 'refreshToken']);
