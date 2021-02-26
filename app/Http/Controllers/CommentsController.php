@@ -17,7 +17,15 @@ class CommentsController extends Controller
 
     public function store(CommentRequest $request, $id)
     {
-        
+        $data = $request->validated();
+        $user = auth('api')->user();
+        $user = User::findOrFail($user->id);
+        $comment = Comment::create([
+            "content" => $data["content"],
+            "gallery_id" => $id,
+            "user_id" => $user['id']
+        ]);
+        return $comment;
     }
 
     public function destroy($id)

@@ -22,18 +22,25 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::get('/galleries', [GalleriesController::class, 'index']);
+
 Route::group(['middleware' => 'auth:api'], function () {
+    Route::get('/galleries/{id}', [GalleriesController::class, 'show']);
+    Route::get('/author/{id}', [UserController::class, 'show']);
+    Route::post('/galleries', [GalleriesController::class, 'store']);
+    Route::post('/galleries/{id}/comments', [CommentsController::class, 'store']);
+    Route::put('/edit-gallery/{id}', [GalleriesController::class, 'update']);
     Route::delete('/delete-comment/{id}', [CommentsController::class, 'destroy']);
     Route::delete('/galleries/{id}', [GalleriesController::class, 'destroy']);
+    Route::get('/auth-user', [AuthController::class, 'authUser']);
+    Route::get('/auth-user-gallery', [AuthController::class, 'authUserGallery']);
     Route::post('logout', [AuthController::class, 'logout']);
-    Route::get('me', [AuthController::class, 'me']);
 });
 
-Route::get('/galleries', [GalleriesController::class, 'index']);
-Route::get('/galleries/{id}', [GalleriesController::class, 'show']);
-Route::get('/author/{id}', [UserController::class, 'show']);
+Route::group(['middleware' => 'guest:api'], function () {
+    Route::post('register', [AuthController::class, 'register']);
+    Route::post('login', [AuthController::class, 'login']);
+});
 
 
-Route::post('register', [AuthController::class, 'register'])->middleware('guest:api');
-Route::post('login', [AuthController::class, 'login'])->middleware('guest:api');
 Route::post('/refresh', [AuthController::class, 'refreshToken']);

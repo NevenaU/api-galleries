@@ -59,5 +59,33 @@ class AuthController extends Controller
             'token' => $token
         ];
     }
+    public function authUser()
+    {
+        $user = auth('api')->user();
+        return $user;
+    }
+    public function authUserGallery(Request $request) 
+    {
+        $user = auth('api')->user();
+
+        $galleriesQuery = Gallery::query();
+        $galleriesQuery->with('user', 'images');
+        $search = $request->header('searchText');
+        $galleriesQuery->where( function($query) use ($search) {
+            $query->where('title', 'like', '%' . $search . '%')
+                ->orWhere('description', 'like', '%' . $search . '%')
+                ->orwhereHas('user', function($que) use ($search) {
+                    $que->where('first_name', 'like', '%' . $search . '%')
+                        ->orWhere('last_name', 'like', '%' . $search . '%');
+                });
+        });
+
+        $galleries = $galleriesQuery->where('user_id', $user->id)->take($request->header('pagination'))
+        ->get();
+
+        $count = $galleriesQuery->count();
+
+        return [$user, $galleries, $count];
+    }
 
 }

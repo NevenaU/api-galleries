@@ -47,7 +47,20 @@ class GalleriesController extends Controller
      */
     public function store(GalleryRequest $request)
     {
-       
+        $data = $request->validated();
+        $user = auth('api')->user();
+        $user = User::findOrFail($user->id);
+        $gallery = Gallery::create([
+            "title" => $data["title"],
+            "description" => $data["description"],
+            "user_id" => $user['id']
+        ]);
+        foreach ($data['images'] as $images) {
+            foreach ($images as $url) {
+                $gallery->addGalleryImages($url, $gallery['id']);
+            }
+        }
+        return $gallery;
     }
 
     /**
@@ -72,7 +85,18 @@ class GalleriesController extends Controller
      */
     public function update(UpdateGalleryRequest $request, $id)
     {
-       
+        $data = $request->validated();
+        $gallery = Gallery::findOrFail($id);
+        $user = auth('api')->user();
+        if($user->id === $gallery->user_id){
+            $gallery->update($data);
+            foreach ($data['images'] as $images) {
+                foreach ($images as $url) {
+                    $gallery->updateGalleryImages($url, $gallery['id']);
+                }
+            }
+        }
+        return $gallery;
     }
 
     /**

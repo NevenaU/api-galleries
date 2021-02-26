@@ -32,7 +32,7 @@ class RegisterRequest extends FormRequest
                 'required', 'confirmed','min:8',
                 new OneDigit()
             ],
-            'terms'=>'accepted',
+            'terms'=>'required|accepted',
             'password_confirmation' => 'required|same:password',
         ];
     }
